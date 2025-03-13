@@ -2,6 +2,8 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
+import { api } from "@/trpc/react";
+import { toast } from "sonner";
 
 type FormInput = {
   repoUrl: string;
@@ -12,8 +14,28 @@ type FormInput = {
 const CreatePage = () => {
   const { register, handleSubmit, reset } = useForm<FormInput>();
 
+  // 从trpc里拿到创建项目方法
+  const createProject = api.project.createProject.useMutation();
+
+  // 点击提交
   const onSubmit = (data: FormInput) => {
     // window.alert(JSON.stringify(data, null, 2));
+    createProject.mutate(
+      {
+        githubUrl: data.repoUrl,
+        name: data.projectName,
+        githubToken: data.githubToken,
+      },
+      {
+        onSuccess: () => {
+          toast.success("Project created successfully");
+          reset();
+        },
+        onError: (error) => {
+          toast.error(error.message);
+        },
+      },
+    );
     console.log(data);
     return true;
   };
@@ -51,7 +73,9 @@ const CreatePage = () => {
               required
             />
             <div className="h-4"></div>
-            <Button type="submit">Create Project</Button>
+            <Button type="submit" disabled={createProject.isPending}>
+              Create Project
+            </Button>
           </form>
         </div>
       </div>
