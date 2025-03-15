@@ -1,3 +1,4 @@
+import { get } from "http";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 import { z } from "zod";
 export const projectRouter = createTRPCRouter({
@@ -26,4 +27,17 @@ export const projectRouter = createTRPCRouter({
 
       return project;
     }),
+  getProjects: protectedProcedure.query(async ({ ctx }) => {
+    const projects = await ctx.db.project.findMany({
+      where: {
+        userToProject: {
+          some: {
+            userId: ctx.user.userId,
+          },
+        },
+        deleteAt: null,
+      },
+    });
+    return projects;
+  }),
 });

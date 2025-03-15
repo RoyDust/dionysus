@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import { api } from "@/trpc/react";
 import { toast } from "sonner";
+import useRefetch from "@/hooks/use-refetch";
 
 type FormInput = {
   repoUrl: string;
@@ -17,6 +18,9 @@ const CreatePage = () => {
   // 从trpc里拿到创建项目方法
   const createProject = api.project.createProject.useMutation();
 
+  // 从trpc里拿到重新获取数据的方法
+  const refetch = useRefetch();
+
   // 点击提交
   const onSubmit = (data: FormInput) => {
     // window.alert(JSON.stringify(data, null, 2));
@@ -29,6 +33,10 @@ const CreatePage = () => {
       {
         onSuccess: () => {
           toast.success("Project created successfully");
+          // 重新获取数据
+          void refetch().catch((error) => {
+            console.error("Failed to refetch:", error);
+          });
           reset();
         },
         onError: (error) => {
@@ -37,6 +45,7 @@ const CreatePage = () => {
       },
     );
     console.log(data);
+
     return true;
   };
 

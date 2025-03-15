@@ -26,6 +26,7 @@ import {
 // import useProject from "@/hooks/use-project";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import useProject from "@/hooks/use-project";
 
 const items = [
   {
@@ -53,7 +54,7 @@ const items = [
 const AppSideBar = () => {
   const pathName = usePathname();
   const { open } = useSidebar();
-  // const { projects, projectId, setProjectId } = useProject();
+  const { projects, projectId, setProjectId } = useProject();
   return (
     <Sidebar collapsible="icon" variant="floating">
       <SidebarHeader>
@@ -95,7 +96,7 @@ const AppSideBar = () => {
           <SidebarGroupLabel>Your Projects</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {/* {projects?.map((project) => {
+              {projects?.map((project) => {
                 return (
                   <SidebarMenuItem key={project.name}>
                     <SidebarMenuButton asChild>
@@ -119,7 +120,7 @@ const AppSideBar = () => {
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );
-              })} */}
+              })}
               <div className="h-2"></div>
               {open && (
                 <SidebarMenuItem>
