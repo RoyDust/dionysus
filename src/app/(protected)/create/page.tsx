@@ -72,14 +72,13 @@ const CreatePage = () => {
             <div className="h-2"></div>
             <Input
               {...register("repoUrl", { required: true })}
-              placeholder="ProjectName"
+              placeholder="GithubRepoUrl"
               required
             />
             <div className="h-2"></div>
             <Input
-              {...register("githubToken", { required: true })}
+              {...register("githubToken")}
               placeholder="Github Token(Optional)"
-              required
             />
             <div className="h-4"></div>
             <Button type="submit" disabled={createProject.isPending}>

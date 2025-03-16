@@ -1,5 +1,7 @@
 import { db } from "@/server/db";
 import { Octokit } from "octokit";
+import axios from "axios";
+import { aiSummariseCommit, summariseCode } from "./gemini";
 
 export const octokit: Octokit = new Octokit({
   auth: process.env.GITHUB_TOKEN,
@@ -16,9 +18,15 @@ type Response = {
 };
 
 export const getCommitHashes = async (githubUrl: string) => {
+  console.log(githubUrl);
+
+  const [owner, repo] = githubUrl.split("/").slice(-2);
+  if (!owner || !repo) {
+    throw new Error("Invalid github url");
+  }
   const { data } = await octokit.rest.repos.listCommits({
-    owner: "docker",
-    repo: "genai-stack",
+    owner,
+    repo,
   });
   const sortedCommits = data.sort((a, b) => {
     return (
@@ -77,6 +85,16 @@ async function filterUnprocessedCommits(
   return processedCommitHashes;
 }
 
+// 拿到commit的diff 交给ai处理
+async function summariseCommit(githubUrl: string, commitHash: string) {
+  const { data } = await axios.get(`${githubUrl}/commits/${commitHash}.diff`, {
+    headers: {
+      Accept: "application/vnd.github.v3.diff",
+    },
+  });
+  return (await aiSummariseCommit(data)) || "";
+}
+
 export const pollCommits = async (projectId: string) => {
   // 拿到项目的github url
   const { project, githubUrl } = await fetchProjectGithubUrl(projectId);
@@ -87,10 +105,40 @@ export const pollCommits = async (projectId: string) => {
     projectId,
     commitHashes,
   );
-  console.log("unprocessedCommits", unprocessedCommits);
-  return unprocessedCommits;
+  // 用ai处理commit
+  const summaryResponses = await Promise.allSettled(
+    unprocessedCommits.map((commit) => {
+      return summariseCommit(githubUrl, commit.commitHash);
+    }),
+  );
+
+  // 遍历summaryResponses，把fulfilled的value拿出来，放到一个数组里
+  const summaries = summaryResponses.map((response) => {
+    if (response.status === "fulfilled") {
+      return response.value;
+    }
+    return "";
+  });
+
+  // 把summaryResponses插入到数据库
+  const commit = await db.commit.createMany({
+    data: summaries.map((summary, index) => {
+      return {
+        projectId: projectId,
+        commitHash: unprocessedCommits[index].commitHash,
+        commitMessage: unprocessedCommits[index].commitMessage,
+        commitAuthorName: unprocessedCommits[index].commitAuthorName,
+        commitAuthorAvatar: unprocessedCommits[index].commitAuthorAvatar,
+        commitDate: unprocessedCommits[index].commitDate,
+        summary,
+      };
+    }),
+  });
+
+  console.log("commit", commit);
+  return commit;
 };
 
-pollCommits("cm87nl7tm00005cld98opf0r7").then((res) => {
-  console.log(res);
-});
+// await pollCommits("cm8bwbd0d000980vbgv91ovnp").then((res) => {
+//   console.log(res);
+// });
