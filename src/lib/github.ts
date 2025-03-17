@@ -95,6 +95,7 @@ async function summariseCommit(githubUrl: string, commitHash: string) {
   return (await aiSummariseCommit(data)) || "";
 }
 
+// 遍历commitHashes，用ai处理commit，然后插入到数据库
 export const pollCommits = async (projectId: string) => {
   // 拿到项目的github url
   const { project, githubUrl } = await fetchProjectGithubUrl(projectId);

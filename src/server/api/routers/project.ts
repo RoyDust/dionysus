@@ -43,4 +43,27 @@ export const projectRouter = createTRPCRouter({
     });
     return projects;
   }),
+  getCommits: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      // 检测是否有新的commit 轮询
+      pollCommits(input.projectId)
+        .then()
+        .catch((error) => console.log(error));
+
+      // 获取commit
+      const commits = await ctx.db.commit.findMany({
+        where: {
+          projectId: input.projectId,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+      return commits;
+    }),
 });

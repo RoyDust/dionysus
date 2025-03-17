@@ -4,6 +4,7 @@ import useProject from "@/hooks/use-project";
 import { useUser } from "@clerk/nextjs";
 import { ExternalLink, Github } from "lucide-react";
 import Link from "next/link";
+import CommitLog from "./commit-log";
 
 const DashboardPage = () => {
   const { project } = useProject();
@@ -38,6 +39,9 @@ const DashboardPage = () => {
       <div className="mt-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-5">Ask meet</div>
       </div>
+
+      <div className="mt-8"></div>
+      <CommitLog />
     </div>
   );
 };

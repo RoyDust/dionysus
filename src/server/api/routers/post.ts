@@ -14,6 +14,7 @@ export const postRouter = createTRPCRouter({
   create: publicProcedure
     .input(z.object({ name: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       return ctx.db.post.create({
         data: {
           name: input.name,
@@ -22,6 +23,7 @@ export const postRouter = createTRPCRouter({
     }),
 
   getLatest: publicProcedure.query(async ({ ctx }) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const post = await ctx.db.post.findFirst({
       orderBy: { createdAt: "desc" },
     });
