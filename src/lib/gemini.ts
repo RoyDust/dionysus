@@ -67,7 +67,7 @@ export const summariseCode = async (doc: Document) => {
   }
 };
 
-// 导出一个函数，用于生成嵌入向量
+// 导出一个函数，用于ai生成嵌入向量 
 export const generateEmbedding = async (summary: string) => {
   const model = genAI.getGenerativeModel({
     model: "text-embedding-004",
